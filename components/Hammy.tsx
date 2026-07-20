@@ -16,20 +16,21 @@ const POSITION: Record<HammyMood, string> = {
   oops: "50% 100%",
 };
 
-export default function Hammy({ mood = "idle", size = 64, className }: Props) {
-  return (
-    <span
-      role="img"
-      aria-label={`Hammy — ${mood}`}
-      className={`hammy-breathe inline-block overflow-hidden rounded-full ${className ?? ""}`}
-      style={{
-        width: size,
-        height: size,
-        backgroundImage: "url('/Hammy.png')",
-        backgroundSize: "300% 200%",
-        backgroundPosition: POSITION[mood],
-        backgroundRepeat: "no-repeat",
-      }}
-    />
-  );
+export default function Hammy(props: Props) {
+  const mood = props.mood || "idle";
+  const size = props.size || 64;
+  const extraClass = props.className || "";
+  const label = "Hammy mood: " + mood;
+  const wrapperClass = "hammy-breathe inline-block overflow-hidden rounded-full " + extraClass;
+
+  const style = {
+    width: size,
+    height: size,
+    backgroundImage: "url(/Hammy.png)",
+    backgroundSize: "300% 200%",
+    backgroundPosition: POSITION[mood],
+    backgroundRepeat: "no-repeat",
+  };
+
+  return <span role="img" aria-label={label} className={wrapperClass} style={style}></span>;
 }
