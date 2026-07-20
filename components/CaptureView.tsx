@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Mic, Square, Sparkles, Loader2, Brain } from "lucide-react";
+import { Mic, Square, Sparkles, Loader2 } from "lucide-react";
 import { Task } from "@/lib/types";
+import { HAMMY } from "@/lib/hammy";
+import Hammy from "./Hammy";
 
 interface Props {
   onTasksParsed: (tasks: Task[]) => void;
@@ -54,19 +56,8 @@ export default function CaptureView({ onTasksParsed }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
-  // Text that existed in the box before the current mic press (typed
-  // manually, or left over from a previous recording).
   const baseTextRef = useRef("");
-  // Merged transcript for the WHOLE current mic press, persisted across
-  // any internal restarts (see shouldListenRef below) — every new snapshot
-  // from onresult gets folded into this via mergeSnapshot, so restarts
-  // never cause duplication regardless of how the engine re-reports text.
   const liveRef = useRef("");
-  // Tracks whether the user *wants* to still be recording — separate from
-  // whether the underlying engine is currently running. Mobile browsers
-  // (esp. Android Chrome) silently stop recognition after a few seconds
-  // even with continuous=true, so we auto-restart it under the hood until
-  // the user explicitly presses stop.
   const shouldListenRef = useRef(false);
   const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -93,10 +84,7 @@ export default function CaptureView({ onTasksParsed }: Props) {
     };
 
     recognition.onerror = (event: any) => {
-      // "no-speech" / "aborted" are benign — the engine just paused because
-      // of silence; onend will fire right after and we restart there.
       if (event?.error === "no-speech" || event?.error === "aborted") return;
-      // Anything else (mic permission denied, no mic, network) is fatal.
       shouldListenRef.current = false;
       setIsRecording(false);
       setError(
@@ -108,11 +96,6 @@ export default function CaptureView({ onTasksParsed }: Props) {
 
     recognition.onend = () => {
       if (shouldListenRef.current) {
-        // Mobile browsers cut the session after a few seconds of silence —
-        // restart immediately so it feels continuous to the user. liveRef
-        // is NOT reset here, since it already holds the merged transcript
-        // for the whole mic press and mergeSnapshot handles any overlap
-        // the next sub-session reports.
         restartTimerRef.current = setTimeout(() => {
           try {
             recognition.start();
@@ -121,7 +104,6 @@ export default function CaptureView({ onTasksParsed }: Props) {
           }
         }, 150);
       } else {
-        // User pressed stop — finalize into the durable base text.
         baseTextRef.current = (baseTextRef.current + " " + liveRef.current).trim();
         liveRef.current = "";
         setText(baseTextRef.current);
@@ -188,7 +170,7 @@ export default function CaptureView({ onTasksParsed }: Props) {
       }));
 
       if (newTasks.length === 0) {
-        setError("AI не знайшов жодної задачі в тексті. Спробуй сформулювати конкретніше.");
+        setError(HAMMY.parseEmptyError);
         return;
       }
 
@@ -196,7 +178,7 @@ export default function CaptureView({ onTasksParsed }: Props) {
       setText("");
       baseTextRef.current = "";
     } catch (e) {
-      setError("Не вдалось звʼязатися з сервером. Перевір інтернет і спробуй ще раз.");
+      setError(HAMMY.networkError);
     } finally {
       setIsParsing(false);
     }
@@ -204,21 +186,18 @@ export default function CaptureView({ onTasksParsed }: Props) {
 
   return (
     <div className="flex h-full flex-col px-4 pt-6">
-      <div className="mb-4 flex items-center gap-2 text-accent2">
-        <Brain size={20} />
-        <h1 className="text-lg font-semibold text-white">Що в голові?</h1>
+      <div className="mb-4 flex items-center gap-2">
+        <Hammy mood={isRecording ? "listening" : isParsing ? "thinking" : "idle"} size={28} />
+        <h1 className="text-lg font-semibold text-ink">{HAMMY.captureTitle}</h1>
       </div>
-      <p className="mb-4 text-sm text-muted">
-        Вивали текстом або голосом усе, що треба зробити — AI сам розбере це на задачі з
-        пріоритетом, часом і дедлайном.
-      </p>
+      <p className="mb-4 text-sm text-muted">{HAMMY.captureSubtitle}</p>
 
       <div className="relative flex-1">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Напр.: треба здати звіт до пʼятниці, подзвонити клієнту завтра вранці, купити подарунок на день народження, розібрати пошту..."
-          className="h-56 w-full resize-none rounded-2xl border border-border bg-surface p-4 text-[15px] leading-relaxed text-white outline-none placeholder:text-muted focus:border-accent"
+          className="h-56 w-full resize-none rounded-2xl border border-border bg-surface p-4 text-[15px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-accent"
         />
         {speechSupported && (
           <button
@@ -234,7 +213,7 @@ export default function CaptureView({ onTasksParsed }: Props) {
       </div>
 
       {isRecording && (
-        <p className="mt-2 text-center text-xs text-high">🔴 Слухаю... натисни ще раз, щоб зупинити</p>
+        <p className="mt-2 text-center text-xs text-high">🔴 {HAMMY.listening}</p>
       )}
 
       {error && (
@@ -249,7 +228,7 @@ export default function CaptureView({ onTasksParsed }: Props) {
         {isParsing ? (
           <>
             <Loader2 size={18} className="animate-spin" />
-            Розбираю...
+            {HAMMY.thinking}
           </>
         ) : (
           <>
