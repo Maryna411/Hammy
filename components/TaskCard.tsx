@@ -106,7 +106,7 @@ export default function TaskCard({
               type="text"
               value={task.title}
               onChange={(e) => onUpdate({ title: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-white outline-none focus:border-accent"
+              className="mt-1 w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
           </label>
 
@@ -116,7 +116,7 @@ export default function TaskCard({
               <select
                 value={task.priority}
                 onChange={(e) => onUpdate({ priority: e.target.value as Priority })}
-                className="mt-1 w-full rounded-lg border border-border bg-surface2 px-2 py-2 text-sm text-white outline-none focus:border-accent"
+                className="mt-1 w-full rounded-lg border border-border bg-surface2 px-2 py-2 text-sm text-ink outline-none focus:border-accent"
               >
                 <option value="high">Високий</option>
                 <option value="medium">Середній</option>
@@ -132,7 +132,7 @@ export default function TaskCard({
                 step={5}
                 value={task.estimatedMinutes}
                 onChange={(e) => onUpdate({ estimatedMinutes: Number(e.target.value) || 5 })}
-                className="mt-1 w-full rounded-lg border border-border bg-surface2 px-2 py-2 text-sm text-white outline-none focus:border-accent"
+                className="mt-1 w-full rounded-lg border border-border bg-surface2 px-2 py-2 text-sm text-ink outline-none focus:border-accent"
               />
             </label>
           </div>
@@ -143,7 +143,7 @@ export default function TaskCard({
               type="date"
               value={task.deadline ?? ""}
               onChange={(e) => onUpdate({ deadline: e.target.value || null })}
-              className="mt-1 w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-white outline-none focus:border-accent"
+              className="mt-1 w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
           </label>
 
