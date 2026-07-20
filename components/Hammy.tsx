@@ -20,3 +20,16 @@ export default function Hammy({ mood = "idle", size = 64, className }: Props) {
   return (
     <span
       role="img"
+      aria-label={`Hammy — ${mood}`}
+      className={`hammy-breathe inline-block overflow-hidden rounded-full ${className ?? ""}`}
+      style={{
+        width: size,
+        height: size,
+        backgroundImage: "url('/Hammy.png')",
+        backgroundSize: "300% 200%",
+        backgroundPosition: POSITION[mood],
+        backgroundRepeat: "no-repeat",
+      }}
+    />
+  );
+}
