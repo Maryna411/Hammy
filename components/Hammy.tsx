@@ -9,11 +9,11 @@ interface Props {
 }
 
 const POSITION: Record<HammyMood, string> = {
-  idle: "0% 0%",
+  idle: "3% 0%",
   listening: "50% 0%",
-  thinking: "100% 0%",
-  happy: "0% 100%",
-  oops: "50% 100%",
+  thinking: "97% 0%",
+  happy: "3% 74%",
+  oops: "50% 74%",
 };
 
 export default function Hammy(props: Props) {
@@ -27,7 +27,7 @@ export default function Hammy(props: Props) {
     width: size,
     height: size,
     backgroundImage: "url(/Hammy.png)",
-    backgroundSize: "300% 200%",
+    backgroundSize: "330% 310%",
     backgroundPosition: POSITION[mood],
     backgroundRepeat: "no-repeat",
   };
