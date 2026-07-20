@@ -27,7 +27,22 @@ export default function CaptureView({ onTasksParsed }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  // Text that existed in the box before the current recording session
+  // started (typed manually, or carried over from earlier sub-sessions).
   const baseTextRef = useRef("");
+  // Finalized transcript for the CURRENT sub-session only. Rebuilt from
+  // scratch on every onresult event (not incrementally appended) — some
+  // mobile engines (esp. Android Chrome) re-emit earlier final results
+  // with a shifted resultIndex, which caused text to duplicate when we
+  // used to append diffs. Rebuilding from index 0 every time is idempotent.
+  const sessionFinalRef = useRef("");
+  // Tracks whether the user *wants* to still be recording — separate from
+  // whether the underlying engine is currently running. Mobile browsers
+  // (esp. Android Chrome) silently stop recognition after a few seconds
+  // even with continuous=true, so we auto-restart it under the hood until
+  // the user explicitly presses stop.
+  const shouldListenRef = useRef(false);
+  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -44,35 +59,88 @@ export default function CaptureView({ onTasksParsed }: Props) {
     recognition.interimResults = true;
 
     recognition.onresult = (event: any) => {
-      let finalTranscript = "";
+      // Rebuild the full final + interim transcript for THIS sub-session
+      // from scratch every time, instead of diffing from event.resultIndex.
+      // This is what makes it immune to engines that re-emit older final
+      // results under a different index.
+      let final = "";
       let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript + " ";
+          final += transcript + " ";
         } else {
           interim += transcript;
         }
       }
-      if (finalTranscript) {
-        baseTextRef.current = (baseTextRef.current + " " + finalTranscript).trim();
-      }
-      setText((baseTextRef.current + " " + interim).trim());
+      sessionFinalRef.current = final.trim();
+      setText((baseTextRef.current + " " + sessionFinalRef.current + " " + interim).trim());
     };
 
-    recognition.onerror = () => setIsRecording(false);
-    recognition.onend = () => setIsRecording(false);
+    recognition.onerror = (event: any) => {
+      // "no-speech" / "aborted" are benign — the engine just paused because
+      // of silence; onend will fire right after and we restart there.
+      if (event?.error === "no-speech" || event?.error === "aborted") return;
+      // Anything else (mic permission denied, no mic, network) is fatal.
+      shouldListenRef.current = false;
+      setIsRecording(false);
+      setError(
+        event?.error === "not-allowed"
+          ? "Немає доступу до мікрофона. Дозволь доступ у налаштуваннях браузера."
+          : "Диктування зупинилось через помилку мікрофона. Спробуй ще раз."
+      );
+    };
+
+    recognition.onend = () => {
+      // Fold whatever got finalized in this sub-session into the durable
+      // base text, then reset — the next sub-session starts its own
+      // results array back at index 0.
+      if (sessionFinalRef.current) {
+        baseTextRef.current = (baseTextRef.current + " " + sessionFinalRef.current).trim();
+        sessionFinalRef.current = "";
+      }
+
+      if (shouldListenRef.current) {
+        // Mobile browsers cut the session after a few seconds of silence —
+        // restart immediately so it feels continuous to the user.
+        restartTimerRef.current = setTimeout(() => {
+          try {
+            recognition.start();
+          } catch {
+            // already running / not ready yet — ignore, next onend will retry
+          }
+        }, 150);
+      } else {
+        setText(baseTextRef.current);
+        setIsRecording(false);
+      }
+    };
 
     recognitionRef.current = recognition;
+
+    return () => {
+      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+      shouldListenRef.current = false;
+      try {
+        recognition.stop();
+      } catch {
+        // no-op
+      }
+    };
   }, []);
 
   const toggleRecording = () => {
     if (!recognitionRef.current) return;
     if (isRecording) {
+      shouldListenRef.current = false;
+      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
       recognitionRef.current.stop();
       setIsRecording(false);
     } else {
       baseTextRef.current = text;
+      sessionFinalRef.current = "";
+      shouldListenRef.current = true;
+      setError(null);
       recognitionRef.current.start();
       setIsRecording(true);
     }
