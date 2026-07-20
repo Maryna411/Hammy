@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Планер дня",
-  description: "Виваль усе, що в голові — AI перетворить це на план дня",
+  title: "Hammy — AI планер дня",
+  description: "Запиши все, що в голові — Hammy розбере це на задачі і план дня",
 };
 
 export const viewport: Viewport = {
@@ -11,7 +11,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#0f1117",
+  themeColor: "#FFF8EF",
 };
 
 export default function RootLayout({
