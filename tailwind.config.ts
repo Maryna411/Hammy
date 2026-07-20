@@ -8,16 +8,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#0f1117",
-        surface: "#171a23",
-        surface2: "#1f2330",
-        border: "#2a2f3d",
+        bg: "#FFF8EF",
+        surface: "#FFFFFF",
+        surface2: "#FDEEDB",
+        border: "#F0DFC4",
         accent: "#6c5ce7",
-        accent2: "#a29bfe",
-        high: "#ef4444",
-        medium: "#f59e0b",
-        low: "#22c55e",
-        muted: "#8b8fa3",
+        accent2: "#5B4FCF",
+        high: "#DC2626",
+        medium: "#B45309",
+        low: "#15803D",
+        muted: "#948A78",
+        ink: "#2B1D0E",
       },
       fontFamily: {
         sans: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
