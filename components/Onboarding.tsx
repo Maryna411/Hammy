@@ -51,7 +51,7 @@ export default function Onboarding({ onDone }: Props) {
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-bg/95 backdrop-blur-sm px-6">
-      <div className="relative w-full max-w-sm rounded-3xl border border-border bg-surface/80 backdrop-blur-md p-6 text-center shadow-xl">
+      <div className="relative w-full max-w-md rounded-3xl border border-border bg-surface/80 backdrop-blur-md p-8 text-center shadow-xl">
         <button
           onClick={onDone}
           className="absolute right-4 top-4 text-xs text-muted"
@@ -78,7 +78,7 @@ export default function Onboarding({ onDone }: Props) {
           </div>
         )}
 
-        <Hammy mood={slide.mood} size={72} className={`mx-auto mb-4 ${slide.tab === null ? "mt-2" : ""}`} />
+        <Hammy mood={slide.mood} size={144} className={`mx-auto mb-4 ${slide.tab === null ? "mt-2" : ""}`} />
 
         <p className="text-xs font-medium uppercase tracking-wide text-accent2">
           {slide.title}
