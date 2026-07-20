@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Inbox as InboxIcon, Wand2 } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { Task } from "@/lib/types";
 import TaskCard from "./TaskCard";
 import EmptyState from "./EmptyState";
+import Hammy from "./Hammy";
+import { HAMMY } from "@/lib/hammy";
 import { buildTodayPlan, formatMinutes, totalMinutes } from "@/lib/planner";
 
 interface Props {
@@ -35,17 +37,17 @@ export default function InboxView({
   if (backlog.length === 0) {
     return (
       <div className="px-4 pt-6">
-        <h1 className="mb-1 text-lg font-semibold text-white">Inbox</h1>
+        <h1 className="mb-1 text-lg font-semibold text-ink">Задачі</h1>
         <EmptyState
-          icon={<InboxIcon size={24} />}
-          title="Тут порожньо"
-          description="Задачі зʼявляться тут після того, як AI розбере твій brain dump."
+          icon={<Hammy mood="idle" size={48} />}
+          title={HAMMY.inboxEmptyTitle}
+          description={HAMMY.inboxEmptyDesc}
           action={
             <button
               onClick={onGoToCapture}
               className="rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white"
             >
-              Вивалити щось із голови
+              Записати щось із голови
             </button>
           }
         />
@@ -56,7 +58,7 @@ export default function InboxView({
   return (
     <div className="px-4 pt-6 pb-4">
       <div className="mb-1 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-white">Inbox</h1>
+        <h1 className="text-lg font-semibold text-ink">Задачі</h1>
         <span className="text-sm text-muted">{backlog.length} задач</span>
       </div>
       <p className="mb-4 text-sm text-muted">
@@ -84,7 +86,7 @@ export default function InboxView({
               max={16}
               value={budgetHours}
               onChange={(e) => setBudgetHours(Number(e.target.value) || 1)}
-              className="w-14 rounded-lg border border-border bg-surface2 px-2 py-1 text-center text-white outline-none focus:border-accent"
+              className="w-14 rounded-lg border border-border bg-surface2 px-2 py-1 text-center text-ink outline-none focus:border-accent"
             />
             <span className="text-muted">год</span>
           </div>
