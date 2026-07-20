@@ -13,8 +13,8 @@ interface Props {
 
 export default function NavTabs({ active, onChange, inboxCount, todayCount }: Props) {
   const items: { key: Tab; label: string; icon: JSX.Element; badge?: number }[] = [
-    { key: "capture", label: "Вивалити", icon: <Mic size={20} /> },
-    { key: "inbox", label: "Inbox", icon: <InboxIcon size={20} />, badge: inboxCount },
+    { key: "capture", label: "Записати", icon: <Mic size={20} /> },
+    { key: "inbox", label: "Задачі", icon: <InboxIcon size={20} />, badge: inboxCount },
     { key: "today", label: "Сьогодні", icon: <ListChecks size={20} />, badge: todayCount },
   ];
 
