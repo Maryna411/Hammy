@@ -26,9 +26,11 @@ export default function InboxView({
   onGoToCapture,
   onGoToToday,
 }: Props) {
-  const [budgetHours, setBudgetHours] = useState(8);
+  const [budgetHoursInput, setBudgetHoursInput] = useState("8");
 
   const handleBuildPlan = () => {
+    const n = Number(budgetHoursInput);
+    const budgetHours = !budgetHoursInput || Number.isNaN(n) ? 8 : Math.min(16, Math.max(1, n));
     const plan = buildTodayPlan(backlog, budgetHours * 60);
     onBuildPlan(plan.map((t) => t.id));
     onGoToToday();
@@ -84,8 +86,13 @@ export default function InboxView({
               type="number"
               min={1}
               max={16}
-              value={budgetHours}
-              onChange={(e) => setBudgetHours(Number(e.target.value) || 1)}
+              value={budgetHoursInput}
+              onChange={(e) => setBudgetHoursInput(e.target.value)}
+              onBlur={() => {
+                const n = Number(budgetHoursInput);
+                const clamped = !budgetHoursInput || Number.isNaN(n) ? 1 : Math.min(16, Math.max(1, n));
+                setBudgetHoursInput(String(clamped));
+              }}
               className="w-14 rounded-lg border border-border bg-surface2 px-2 py-1 text-center text-ink outline-none focus:border-accent"
             />
             <span className="text-muted">год</span>
