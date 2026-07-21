@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2, ChevronDown, Clock, CalendarDays, Check } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { formatMinutes, formatDeadline } from "@/lib/planner";
@@ -39,6 +39,11 @@ export default function TaskCard({
   showCompleteCheckbox = false,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const [minutesInput, setMinutesInput] = useState(String(task.estimatedMinutes));
+
+  useEffect(() => {
+    setMinutesInput(String(task.estimatedMinutes));
+  }, [task.estimatedMinutes]);
   const deadlineLabel = formatDeadline(task.deadline);
   const overdue = deadlineLabel?.startsWith("простроч");
 
@@ -130,8 +135,21 @@ export default function TaskCard({
                 type="number"
                 min={5}
                 step={5}
-                value={task.estimatedMinutes}
-                onChange={(e) => onUpdate({ estimatedMinutes: Number(e.target.value) || 5 })}
+                value={minutesInput}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  setMinutesInput(raw);
+                  const n = Number(raw);
+                  if (raw !== "" && !Number.isNaN(n)) {
+                    onUpdate({ estimatedMinutes: n });
+                  }
+                }}
+                onBlur={() => {
+                  const n = Number(minutesInput);
+                  const clamped = !minutesInput || Number.isNaN(n) || n < 5 ? 5 : n;
+                  setMinutesInput(String(clamped));
+                  onUpdate({ estimatedMinutes: clamped });
+                }}
                 className="mt-1 w-full rounded-lg border border-border bg-surface2 px-2 py-2 text-sm text-ink outline-none focus:border-accent"
               />
             </label>
