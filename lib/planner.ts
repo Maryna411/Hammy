@@ -11,14 +11,13 @@ function daysUntil(deadline: string | null): number {
 }
 
 /**
- * Picks which backlog tasks go into today's plan, given a time budget
- * (in minutes). Sorts by: overdue/due-today first, then priority,
- * then nearest deadline, then shorter tasks — and fills the day
- * without exceeding the budget. Always includes at least overdue tasks
- * even if that pushes past budget slightly, since they're urgent.
+ * Sorts tasks the way the day's plan should be read: overdue first,
+ * then by priority (high -> low), then by nearest deadline, then
+ * shorter tasks first. Used both to pick today's plan and to render
+ * it in the same order.
  */
-export function buildTodayPlan(backlog: Task[], budgetMinutes: number): Task[] {
-  const scored = [...backlog].sort((a, b) => {
+export function sortByPriorityAndDeadline(tasks: Task[]): Task[] {
+  return [...tasks].sort((a, b) => {
     const da = daysUntil(a.deadline);
     const db = daysUntil(b.deadline);
     const overdueA = da <= 0 ? -1 : 0;
@@ -32,6 +31,10 @@ export function buildTodayPlan(backlog: Task[], budgetMinutes: number): Task[] {
 
     return a.estimatedMinutes - b.estimatedMinutes;
   });
+}
+
+export function buildTodayPlan(backlog: Task[], budgetMinutes: number): Task[] {
+  const scored = sortByPriorityAndDeadline(backlog);
 
   const plan: Task[] = [];
   let used = 0;
