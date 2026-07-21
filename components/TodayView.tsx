@@ -7,7 +7,7 @@ import TaskCard from "./TaskCard";
 import EmptyState from "./EmptyState";
 import Hammy from "./Hammy";
 import { HAMMY } from "@/lib/hammy";
-import { formatMinutes, totalMinutes } from "@/lib/planner";
+import { formatMinutes, totalMinutes, sortByPriorityAndDeadline } from "@/lib/planner";
 
 interface Props {
   todayTasks: Task[];
@@ -19,7 +19,10 @@ interface Props {
 export default function TodayView({ todayTasks, onUpdate, onDelete, onGoToInbox }: Props) {
   const [showCompleted, setShowCompleted] = useState(false);
 
-  const active = useMemo(() => todayTasks.filter((t) => !t.completed), [todayTasks]);
+  const active = useMemo(
+    () => sortByPriorityAndDeadline(todayTasks.filter((t) => !t.completed)),
+    [todayTasks]
+  );
   const completed = useMemo(() => todayTasks.filter((t) => t.completed), [todayTasks]);
   const planned = totalMinutes(todayTasks);
   const done = totalMinutes(completed);
